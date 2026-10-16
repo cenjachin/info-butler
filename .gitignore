@@ -1,0 +1,12 @@
+# WorkBuddy 本地工作区文件（不纳入版本控制）
+.workbuddy/
+.wbapp_*.genie
+
+# 临时文件
+.proxy-ca.pem
+tmp-getca.ps1
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+node_modules/

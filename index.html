@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人信息管家</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ============ 登录视图 ============ -->
+  <div id="auth-view" class="auth-view">
+    <div class="auth-card">
+      <div class="auth-logo">🧠</div>
+      <h1>个人信息管家</h1>
+      <p class="auth-sub">记录零散想法、资料与待办，AI 帮你分类、总结、关联与回顾</p>
+
+      <div id="auth-error" class="auth-error hidden"></div>
+
+      <label class="field-label" for="phone-input">手机号</label>
+      <input id="phone-input" class="text-input" type="tel" maxlength="11" placeholder="请输入 11 位手机号" autocomplete="tel">
+
+      <label class="field-label" for="code-input">验证码</label>
+      <div class="code-row">
+        <input id="code-input" class="text-input" type="text" maxlength="6" placeholder="6 位验证码" autocomplete="one-time-code">
+        <button id="send-code-btn" type="button" class="btn btn-ghost">获取验证码</button>
+      </div>
+      <p id="phone-error" class="field-error"></p>
+
+      <button id="login-btn" type="button" class="btn btn-primary btn-block">登录 / 注册</button>
+      <p class="auth-hint">未注册的手机号验证通过后将自动创建账号</p>
+
+      <div class="auth-divider"><span>或</span></div>
+      <button id="wechat-login-btn" type="button" class="btn btn-wechat btn-block">🟢 微信登录</button>
+    </div>
+  </div>
+
+  <!-- ============ 应用主体 ============ -->
+  <div id="app-view" class="app-view hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-logo">🧠</span>
+        <span class="brand-name">个人信息管家</span>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-view="records" data-filter="all">
+          <span class="nav-icon">🗂️</span>全部记录<span class="nav-count" id="count-all">0</span>
+        </button>
+        <button class="nav-item" data-view="records" data-filter="idea">
+          <span class="nav-icon">💡</span>想法<span class="nav-count" id="count-idea">0</span>
+        </button>
+        <button class="nav-item" data-view="records" data-filter="resource">
+          <span class="nav-icon">📎</span>资料<span class="nav-count" id="count-resource">0</span>
+        </button>
+        <button class="nav-item" data-view="records" data-filter="todo">
+          <span class="nav-icon">✅</span>待办<span class="nav-count" id="count-todo">0</span>
+        </button>
+        <div class="nav-sep"></div>
+        <button class="nav-item" data-view="chat">
+          <span class="nav-icon">💬</span>智能问答
+        </button>
+        <button class="nav-item" data-view="organize">
+          <span class="nav-icon">🗓️</span>待办整理
+        </button>
+        <button class="nav-item" data-view="summary">
+          <span class="nav-icon">📊</span>阶段总结
+        </button>
+      </nav>
+      <div class="sidebar-foot">
+        <span id="model-badge" class="model-badge" title="当前使用的大模型">AI 就绪</span>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input id="search-input" type="search" placeholder="关键词检索：搜标题、摘要、内容、标签…">
+        </div>
+        <div class="user-box">
+          <span id="user-name" class="user-name"></span>
+          <button id="logout-btn" class="btn btn-ghost btn-sm">退出</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <!-- 记录视图 -->
+        <section id="view-records" class="view">
+          <div class="capture-card">
+            <div class="capture-types" id="capture-types">
+              <button class="type-btn active" data-type="idea">💡 想法</button>
+              <button class="type-btn" data-type="resource">📎 资料</button>
+              <button class="type-btn" data-type="todo">✅ 待办</button>
+            </div>
+            <textarea id="capture-input" rows="3" placeholder="随时记录任何想法、资料或待办…（保存后 AI 自动分类、总结、提取关键词并关联相关内容）"></textarea>
+            <div class="capture-bar">
+              <input id="capture-due" type="date" class="due-input hidden" title="待办截止日期">
+              <span id="capture-hint" class="capture-hint"></span>
+              <button id="capture-btn" class="btn btn-primary">保存并分析</button>
+            </div>
+          </div>
+
+          <div class="list-toolbar">
+            <div id="category-chips" class="category-chips"></div>
+            <span id="list-count" class="list-count"></span>
+          </div>
+
+          <div id="item-list" class="item-list"></div>
+          <div id="empty-state" class="empty-state hidden">
+            <div class="empty-icon">🗒️</div>
+            <p>还没有记录，在上方输入框记下第一条吧</p>
+          </div>
+        </section>
+
+        <!-- 智能问答视图 -->
+        <section id="view-chat" class="view hidden">
+          <div class="chat-context-bar">
+            <span id="chat-context-text">提问将基于你的全部记录内容回答</span>
+            <button id="new-chat-btn" class="btn btn-ghost btn-sm">新对话</button>
+          </div>
+          <div id="chat-messages" class="chat-messages"></div>
+          <div class="chat-input-row">
+            <textarea id="chat-input" rows="1" placeholder="问问你的记录，例如：我最近关于工作有哪些待办？"></textarea>
+            <button id="chat-send-btn" class="btn btn-primary">发送</button>
+            <button id="chat-stop-btn" class="btn btn-ghost hidden">停止</button>
+          </div>
+        </section>
+
+        <!-- 待办整理视图 -->
+        <section id="view-organize" class="view hidden">
+          <div class="panel-card">
+            <h2>🗓️ 待办整理</h2>
+            <p class="panel-desc">AI 会读取你所有未完成的待办，按优先级与紧急度重新分组，给出建议的执行顺序和推进节奏。</p>
+            <div class="organize-actions">
+              <span id="pending-count" class="list-count"></span>
+              <button id="organize-btn" class="btn btn-primary">AI 整理待办</button>
+            </div>
+            <div id="organize-output" class="organize-output"></div>
+          </div>
+        </section>
+
+        <!-- 阶段总结视图 -->
+        <section id="view-summary" class="view hidden">
+          <div class="panel-card">
+            <h2>📊 阶段总结</h2>
+            <p class="panel-desc">选择一个时间段，AI 基于该时段内的全部记录生成阶段总结，并给出后续行动建议。</p>
+            <div class="period-bar" id="period-bar">
+              <button class="period-btn" data-days="7">最近 7 天</button>
+              <button class="period-btn active" data-days="30">最近 30 天</button>
+              <button class="period-btn" data-days="90">最近 90 天</button>
+              <button class="period-btn" data-days="0">全部</button>
+            </div>
+            <div class="organize-actions">
+              <span id="period-count" class="list-count"></span>
+              <button id="summary-btn" class="btn btn-primary">生成阶段总结</button>
+            </div>
+            <div id="summary-output" class="summary-output"></div>
+          </div>
+          <div id="summary-history" class="summary-history"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-root" class="toast-root"></div>
+  <div id="sdk-error" class="sdk-error hidden">云端组件加载失败，请检查网络后刷新页面。</div>
+
+  <script src="workbuddy-cloud.global.js" onerror="document.getElementById('sdk-error').classList.remove('hidden')"></script>
+  <script src="app.js"></script>
+</body>
+</html>
