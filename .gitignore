@@ -2,9 +2,13 @@
 .workbuddy/
 .wbapp_*.genie
 
-# 临时文件
+# 本地 TLS 信任链（Windows 根证书 + 本机代理 CA，供 git 推送使用）
+.git-ca-combined.pem
 .proxy-ca.pem
-tmp-getca.ps1
+
+# 临时脚本
+tmp-*.ps1
+tmp-*.py
 
 # 系统与编辑器
 .DS_Store
